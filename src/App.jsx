@@ -1,33 +1,93 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+import SearchBar from './SearchBar/SearchBar';
+import { ThreeDots } from 'react-loader-spinner';
+import ImageGallery from './ImageGallery/ImageGallery';
+import fetchImages from './image-api';
+import ErrorMessage from './ErrorMessage/ErrorMessage';
+import ImageModal from './ImageModal/ImageModal';
+
+import LoadMoreBtn from './LoadMoreBtn/LoadMoreBtn';
+
 
 function App() {
-  const [count, setCount] = useState(0)
+
+  const [images, setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [page, setPage] = useState(1);
+  const [query, setQuery] = useState("")
+  const [selectedImage, setSelectedImage] = useState({});
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (query === "") {
+      return;
+    }
+    async function gatDate() {
+      try {
+       
+        setIsLoading(true);
+        setError(false);
+       
+
+       const data = await fetchImages(query, page);
+        setImages((prevImages) => {
+          return [...prevImages, ...data];
+      }); 
+    }
+    catch (error) {
+       setError(true)
+    }
+       finally {
+         setIsLoading(false);
+    }
+    }
+    gatDate()
+  }, [query, page])
+
+  const handleSubmit = async (newQuery) => {
+     setImages([]);
+    setQuery(newQuery)
+    setPage(1);
+
+  }
+  const handleLoadMore = () => {
+    setPage(page+1)
+  }
+  const onSelectImage = (image) => {
+    setSelectedImage(image);
+    openModal()
+  };
+ function openModal() {
+    setModalIsOpen(true);
+ }
+    function closeModal() {
+    setModalIsOpen(false);
+  }
+  
+
 
   return (
-    <>
+  <>
+      <SearchBar onSubmit={handleSubmit} ></SearchBar>   
+     
+      {error && <ErrorMessage /> }
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        {images.length > 0 && 
+          <ImageGallery images={ images} onSelectImage={onSelectImage} />  
+        }
+        {images.length > 0 && !isLoading && 
+          <LoadMoreBtn handleLoadMore={handleLoadMore} />
+        }
+         {isLoading && <ThreeDots/> }
+       
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+    
+        <ImageModal selectedImage={selectedImage}
+          modalIsOpen={modalIsOpen} closeModal={closeModal} />
+    
+   
     </>
   )
 }
