@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import SearchBar from './SearchBar/SearchBar';
-import { ThreeDots } from 'react-loader-spinner';
 import ImageGallery from './ImageGallery/ImageGallery';
 import fetchImages from './image-api';
 import ErrorMessage from './ErrorMessage/ErrorMessage';
 import ImageModal from './ImageModal/ImageModal';
 
 import LoadMoreBtn from './LoadMoreBtn/LoadMoreBtn';
+import Loader from './Loader/Loader';
 
 
 function App() {
@@ -19,6 +19,7 @@ function App() {
   const [query, setQuery] = useState("")
   const [selectedImage, setSelectedImage] = useState({});
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  
 
   useEffect(() => {
     if (query === "") {
@@ -33,6 +34,7 @@ function App() {
 
        const data = await fetchImages(query, page);
         setImages((prevImages) => {
+          console.log(data);
           return [...prevImages, ...data];
       }); 
     }
@@ -80,7 +82,7 @@ function App() {
         {images.length > 0 && !isLoading && 
           <LoadMoreBtn handleLoadMore={handleLoadMore} />
         }
-         {isLoading && <ThreeDots/> }
+         {isLoading && <Loader/> }
        
       </div>
     
