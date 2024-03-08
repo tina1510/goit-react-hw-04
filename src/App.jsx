@@ -34,7 +34,6 @@ function App() {
 
        const data = await fetchImages(query, page);
         setImages((prevImages) => {
-          console.log(data);
           return [...prevImages, ...data];
       }); 
     }
